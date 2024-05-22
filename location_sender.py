@@ -82,8 +82,8 @@ class LocationSender:
 
 
 if __name__ == '__main__':
-    api_url = 'http://localhost:8080/api/iot'  # Replace with your actual endpoint URL
-    websocket_url = 'ws://localhost:8080/websocketPath'  # Replace with your WebSocket URL
+    api_url = 'http://34.159.189.145:8080/api/iot'  # Replace with your actual endpoint URL
+    websocket_url = 'ws://34.159.189.145:8080/websocketPath'  # Replace with your WebSocket URL
 
     location_sender = LocationSender(api_url, websocket_url)
     try:
