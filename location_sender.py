@@ -82,11 +82,10 @@ class LocationSender:
 
 
 if __name__ == '__main__':
+    time.sleep(60)
+
     api_url = 'http://34.159.189.145:8080/api/iot'  # Replace with your actual endpoint URL
     websocket_url = 'ws://34.159.189.145:8080/websocketPath'  # Replace with your WebSocket URL
 
     location_sender = LocationSender(api_url, websocket_url)
-    try:
-        location_sender.run()
-    except KeyboardInterrupt:
-        location_sender.stop()
+    location_sender.run()
