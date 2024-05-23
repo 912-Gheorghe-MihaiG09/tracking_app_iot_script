@@ -4,7 +4,6 @@ import time
 import threading
 import websocket
 
-
 class LocationSender:
     def __init__(self, api_url, websocket_url):
         self.api_url = api_url
@@ -17,14 +16,10 @@ class LocationSender:
 
     def get_current_location(self):
         try:
-            # Send a request to the ipapi.co API to get location data
             response = requests.get('https://ipapi.co/json/')
             data = response.json()
-
-            # Extract location information
             latitude = data.get('latitude')
             longitude = data.get('longitude')
-
             if latitude is not None and longitude is not None:
                 return {
                     'latitude': latitude,
@@ -50,42 +45,52 @@ class LocationSender:
                         print(f"Failed to send location. Status code: {response.status_code}")
                 except Exception as e:
                     print(f"Error sending location: {e}")
-            self.stop_event.wait(120)  # Wait for 5 minutes
+            self.stop_event.wait(300)  # Wait for 5 minutes (300 seconds)
 
     def on_message(self, ws, message):
         if message == f"ping: {self.serial_number}":
             pygame.mixer.music.play()
-
             time.sleep(10)
-
             pygame.mixer.music.stop()
+
+    def on_error(self, ws, error):
+        print(f"WebSocket error: {error}")
+
+    def on_close(self, ws, close_status_code, close_msg):
+        print("WebSocket connection closed")
+        if not self.stop_event.is_set():
+            print("Reconnecting WebSocket...")
+            self.start_websocket()
 
     def start_websocket(self):
         self.ws = websocket.WebSocketApp(
             self.websocket_url,
             on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
         )
         self.ws.run_forever()
 
     def run(self):
-        # Start the location sending thread
         location_thread = threading.Thread(target=self.send_location)
+        location_thread.daemon = True
         location_thread.start()
 
-        # Start the WebSocket listening
-        self.start_websocket()
+        while not self.stop_event.is_set():
+            self.start_websocket()
+            time.sleep(5)  # Wait a bit before trying to reconnect
 
     def stop(self):
         self.stop_event.set()
         if self.ws:
             self.ws.close()
 
-
 if __name__ == '__main__':
-    time.sleep(60)
-
     api_url = 'http://34.159.189.145:8080/api/iot'  # Replace with your actual endpoint URL
     websocket_url = 'ws://34.159.189.145:8080/websocketPath'  # Replace with your WebSocket URL
 
     location_sender = LocationSender(api_url, websocket_url)
-    location_sender.run()
+    try:
+        location_sender.run()
+    except KeyboardInterrupt:
+        location_sender.stop()
