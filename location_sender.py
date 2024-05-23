@@ -78,7 +78,7 @@ class LocationSender:
 
         while not self.stop_event.is_set():
             self.start_websocket()
-            time.sleep(5)  # Wait a bit before trying to reconnect
+            time.sleep(20)  # Wait a bit before trying to reconnect
 
     def stop(self):
         self.stop_event.set()
@@ -86,6 +86,8 @@ class LocationSender:
             self.ws.close()
 
 if __name__ == '__main__':
+    time.sleep(20)
+
     api_url = 'http://34.159.189.145:8080/api/iot'  # Replace with your actual endpoint URL
     websocket_url = 'ws://34.159.189.145:8080/websocketPath'  # Replace with your WebSocket URL
 
